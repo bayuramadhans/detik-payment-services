@@ -22,6 +22,7 @@
                     'message'   => "Database gagal terkoneksi: " . $exception->getMessage()
                 ];
                 echo json_encode($data);
+                exit();
             }
             return $this->conn;
         }
