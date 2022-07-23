@@ -42,4 +42,25 @@ class TransactionTable {
             echo "Migration gagal :" . $e->getMessage();
         }
     }
+
+    public function seed(){
+        // membuat sql syntax seeder tabel transactions
+        $time = time();
+        $sql = "INSERT INTO {$this->table_name} (references_id, invoice_id, item_name, amount, payment_type, number_va, customer_name, merchant_id, status)
+        VALUES ('TRANS-{$time}', 'INV-{$time}', 'Item', '10', 'virtual_account', 'VA{$time}', 'Bayu RS', '{$time}', 'pending');";
+
+        // eksekusi syntax seeder
+        try {
+            $save = $this->db->prepare($sql);
+            if(!$save->execute()){
+                echo "Seeder {$this->table_name} gagal \n";
+                echo $save->errorInfo()[2];
+            }else{
+                echo "Seeder {$this->table_name} telah berhasil";
+            }
+        
+        } catch (PDOException $e) {
+            echo "Seeder gagal :" . $e->getMessage();
+        }
+    }
 } 
