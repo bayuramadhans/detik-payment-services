@@ -1,11 +1,19 @@
 <?php
 
-require PROJECT_ROOT . '/Databases/Migration.php';
+include_once PROJECT_ROOT . '/Databases/Database.php';
 
-class TransactionTable extends Migration {
-    private $table_name = "transactions";
+class TransactionTable {
+    private $table_name;
+    private $db;
 
-    public function migrate() {
+    public function __construct(){
+        $db = new Database;
+        $this->db = $db->connect();
+        $this->table_name = "transactions";
+    }
+
+    public function migrate(){
+        // membuat sql syntax tabel transactions apabila tidak ditemukan di database
         $sql = "CREATE TABLE IF NOT EXISTS {$this->table_name} (
             id SERIAL PRIMARY KEY,
             references_id VARCHAR(255) UNIQUE NOT NULL,
@@ -22,8 +30,13 @@ class TransactionTable extends Migration {
         )";
 
         try {
-            $this->db->exec($sql);
-            echo "Migration {$this->table_name} telah berhasil";
+            $save = $this->db->prepare($sql);
+            if(!$save->execute()){
+                echo "Migration {$this->table_name} gagal \n";
+                echo $save->errorInfo()[2];
+            }else{
+                echo "Migration {$this->table_name} telah berhasil";
+            }
         
         } catch (PDOException $e) {
             echo "Migration gagal :" . $e->getMessage();
