@@ -44,8 +44,8 @@ class Transaction {
         }
 
         // persiapan syntax sql insert
-        $sql = "INSERT INTO {$this->table_name} (references_id, invoice_id, item_name, amount, payment_type, number_va, customer_name, merchant_id, status)
-        VALUES (:references_id, :invoice_id, :item_name, :amount, :payment_type, :number_va, :customer_name, :merchant_id, :status);";
+        $sql = "INSERT INTO {$this->table_name} (references_id, invoice_id, item_name, amount, payment_type, number_va, customer_name, merchant_id, status, created_at)
+        VALUES (:references_id, :invoice_id, :item_name, :amount, :payment_type, :number_va, :customer_name, :merchant_id, :status, :created_at);";
 
         $data = [
             'references_id' =>$this->references_id,
@@ -56,7 +56,8 @@ class Transaction {
             'number_va'     =>$this->number_va,
             'customer_name' =>$this->customer_name,
             'merchant_id'   =>$this->merchant_id,
-            'status'        =>$this->status
+            'status'        =>$this->status,
+            'created_at'    =>date('Y-m-d H:i:s')
         ];
 
         // eksekusi syntax insert
@@ -213,10 +214,11 @@ class Transaction {
         $this->references_id = htmlspecialchars(strip_tags($references_id));
 
         // persiapan syntax sql get data transaksi
-        $sql  = "UPDATE {$this->table_name} SET status = :status WHERE references_id = :references_id RETURNING status;";
+        $sql  = "UPDATE {$this->table_name} SET status = :status, updated_at = :updated_at WHERE references_id = :references_id RETURNING status;";
         $data = [
             'status' => $status,
-            'references_id' => $this->references_id
+            'references_id' => $this->references_id,
+            'updated_at'    => date('Y-m-d H:i:s')
         ];
 
         // eksekusi syntax get data transaksi
