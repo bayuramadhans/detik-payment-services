@@ -1,0 +1,97 @@
+{
+	"info": {
+		"_postman_id": "67d9db13-6662-470e-83e7-3cd28408ae3d",
+		"name": "Detik Assignment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13840064"
+	},
+	"item": [
+		{
+			"name": "Get Status Transaksi Pembayaran",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url_project}}/transaction?references_id=TRANS-AZNLZQBRVZLMAYI&merchant_id=19919",
+					"host": [
+						"{{url_project}}"
+					],
+					"path": [
+						"transaction"
+					],
+					"query": [
+						{
+							"key": "references_id",
+							"value": "TRANS-AZNLZQBRVZLMAYI",
+							"description": "required"
+						},
+						{
+							"key": "merchant_id",
+							"value": "19919",
+							"description": "required"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Transaksi Pembayaran",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "invoice_id",
+							"value": "INV-1213133",
+							"description": "required",
+							"type": "text"
+						},
+						{
+							"key": "item_name",
+							"value": "ICE CREAM",
+							"description": "required",
+							"type": "text"
+						},
+						{
+							"key": "amount",
+							"value": "10",
+							"description": "required",
+							"type": "text"
+						},
+						{
+							"key": "payment_type",
+							"value": "virtual_account",
+							"description": "required, virtual_account atau credit_card",
+							"type": "text"
+						},
+						{
+							"key": "customer_name",
+							"value": "Bayu",
+							"description": "required",
+							"type": "text"
+						},
+						{
+							"key": "merchant_id",
+							"value": "19919",
+							"description": "required",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url_project}}/transaction",
+					"host": [
+						"{{url_project}}"
+					],
+					"path": [
+						"transaction"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
