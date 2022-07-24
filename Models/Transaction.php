@@ -177,4 +177,42 @@ class Transaction {
         }
 
     }
+
+    /**
+     * Untuk melakukan aksi ganti status
+     *
+     * @param references_id identifier dari transaksi
+     * @param status status baru
+     * @return boolean status dari proses
+     */
+    public function changeStatus($references_id, $status){
+
+        $status = strtolower($status);
+        // validasi status
+        if (!in_array($status, $this->valid_status)){
+            $this->error_message = "status tidak valid";
+            return FALSE;
+        }
+
+        $this->references_id = $references_id;
+
+        // persiapan syntax sql get data transaksi
+        $sql = "UPDATE {$this->table_name} SET status = '{$status}' WHERE references_id = '{$this->references_id}' RETURNING status;";
+
+        // eksekusi syntax get data transaksi
+        try {
+            $update = $this->db->prepare($sql);
+            if(!$update->execute()){
+                $this->error_message = "Update status data transaksi gagal :" . $get->errorInfo()[2];
+                return FALSE;
+            }else{
+                return TRUE;
+            }
+        
+        } catch (PDOException $e) {
+            $this->error_message = "Get data transaksi gagal :" . $e->getMessage();
+            return FALSE;
+        }
+
+    }
 }
