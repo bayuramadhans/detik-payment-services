@@ -45,12 +45,24 @@ class Transaction {
 
         // persiapan syntax sql insert
         $sql = "INSERT INTO {$this->table_name} (references_id, invoice_id, item_name, amount, payment_type, number_va, customer_name, merchant_id, status)
-        VALUES ('{$this->references_id}', '{$this->invoice_id}', '{$this->item_name}', '{$this->amount}', '{$this->payment_type}', '{$this->number_va}', '{$this->customer_name}', '{$this->merchant_id}', '{$this->status}');";
+        VALUES (:references_id, :invoice_id, :item_name, :amount, :payment_type, :number_va, :customer_name, :merchant_id, :status);";
+
+        $data = [
+            'references_id' =>$this->references_id,
+            'invoice_id'    =>$this->invoice_id,
+            'item_name'     =>$this->item_name,
+            'amount'        =>$this->amount,
+            'payment_type'  =>$this->payment_type,
+            'number_va'     =>$this->number_va,
+            'customer_name' =>$this->customer_name,
+            'merchant_id'   =>$this->merchant_id,
+            'status'        =>$this->status
+        ];
 
         // eksekusi syntax insert
         try {
             $save = $this->db->prepare($sql);
-            if(!$save->execute()){
+            if(!$save->execute($data)){
                 $this->error_message = "Create data transaksi gagal :" . $save->errorInfo()[2];
                 return FALSE;
             }else{
@@ -147,26 +159,30 @@ class Transaction {
             return FALSE;
         }
 
-        $this->references_id = $_GET['references_id'];
-        $this->merchant_id   = $_GET['merchant_id'];
+        $this->references_id = htmlspecialchars(strip_tags($_GET['references_id']));
+        $this->merchant_id   = htmlspecialchars(strip_tags($_GET['merchant_id']));
 
         // persiapan syntax sql get data transaksi
-        $sql = "SELECT invoice_id, status FROM {$this->table_name} WHERE references_id = '{$this->references_id}' AND merchant_id = '{$this->merchant_id}';";
+        $sql  = "SELECT invoice_id, status FROM {$this->table_name} WHERE references_id = :references_id AND merchant_id = :merchant_id;";
+        $data = [
+            'references_id' =>$this->references_id,
+            'merchant_id'   =>$this->merchant_id,
+        ];
 
         // eksekusi syntax get data transaksi
         try {
             $get = $this->db->prepare($sql);
-            if(!$get->execute()){
+            if(!$get->execute($data)){
                 $this->error_message = "Get data transaksi gagal :" . $get->errorInfo()[2];
                 return FALSE;
             }else{
-                $data = $get->fetch();
-                if(empty($data)){
+                $result = $get->fetch();
+                if(empty($result)){
                     $this->error_message = "Data tidak ditemukan";
                     return FALSE;
                 }else{
-                    $this->invoice_id = $data['invoice_id'];
-                    $this->status = $data['status'];
+                    $this->invoice_id = $result['invoice_id'];
+                    $this->status = $result['status'];
                 }
                 return TRUE;
             }
@@ -187,22 +203,26 @@ class Transaction {
      */
     public function changeStatus($references_id, $status){
 
-        $status = strtolower($status);
+        $status = htmlspecialchars(strip_tags(strtolower($status)));
         // validasi status
         if (!in_array($status, $this->valid_status)){
             $this->error_message = "status tidak valid";
             return FALSE;
         }
 
-        $this->references_id = $references_id;
+        $this->references_id = htmlspecialchars(strip_tags($references_id));
 
         // persiapan syntax sql get data transaksi
-        $sql = "UPDATE {$this->table_name} SET status = '{$status}' WHERE references_id = '{$this->references_id}' RETURNING status;";
+        $sql  = "UPDATE {$this->table_name} SET status = :status WHERE references_id = :references_id RETURNING status;";
+        $data = [
+            'status' => $status,
+            'references_id' => $this->references_id
+        ];
 
         // eksekusi syntax get data transaksi
         try {
             $update = $this->db->prepare($sql);
-            if(!$update->execute()){
+            if(!$update->execute($data)){
                 $this->error_message = "Update status data transaksi gagal :" . $get->errorInfo()[2];
                 return FALSE;
             }else{
