@@ -24,9 +24,15 @@ if (isset($argv[1])) {
             if (isset($argv[2])){
                 switch ($argv[2]) {
                     case 'TransactionTable':
+                        // set jumlah data seeder
+                        $total = 5;
+                        if(isset($argv[3]) && is_numeric($argv[3])){
+                            $total = $argv[3];
+                        }
+
                         require PROJECT_ROOT . '/Databases/TransactionTable.php';
                         $transaction = new TransactionTable;
-                        $transaction->seed();
+                        $transaction->seed($total);
                         break;
                     default:
                         echo "No Seeder Found";
