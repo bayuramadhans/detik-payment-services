@@ -1,5 +1,6 @@
 # Detik Payment Services
-Submission aplikasi payment services sederhana
+Submission aplikasi payment services sederhana.<br>
+Dapat diakses juga pada [detik.bayuramadhan.com](https://detik.bayuramadhan.com)
 
 ## Requirement
 Untuk dapat menjalankan sistem ini, environtment yang dibutuhkan sebagai berikut :
@@ -12,7 +13,9 @@ Berikut adalah langkah instalasi dari sistem Detik Payment Services :
 ```
 https://github.com/bayuramadhans/detik-payment-services.git
 ```
-2. Pada direktori project buka file `Databases/database.php` dan pada bagian 
+2. Buat database untuk project ini (contoh dalam project ini saya menggunakan db detik_payment)
+
+3. Pada direktori project buka file `Databases/database.php` dan pada bagian 
 pengaturan database atur config database sesuai dengan environtment masing-masing
 ```
 // pengaturan database (sesuaikan dengan environment masing-masing)
@@ -24,18 +27,19 @@ private $username = "postgres";
 private $password = "example_password";
 ```
 
-3. Jalankan migration database dengan cara menjalankan command dibawah ini pada direktori project
+4. Jalankan migration database dengan cara menjalankan command dibawah ini pada direktori project
 ```
 php command.php migrate TransactionTable
 ```
 jika migration berhasil, maka response berupa `Migration transactions telah berhasil`
 
-4. Jika anda memerlukan data sample atau seeder, anda dapat menjalankan command dibawah ini pada direktori project
+5. Jika anda memerlukan data sample atau seeder, anda dapat menjalankan command dibawah ini pada direktori project
 ```
 php command.php seed TransactionTable {jumlah}
 ```
 jumlah data seeder opsional untuk di isi ( default 5 data )
-5. Pada direktori utama project, buka command prompt dan jalankan command ini untuk memulai php server
+
+6. Pada direktori utama project, buka command prompt dan jalankan command ini untuk memulai php server
 ```
 php -S 127.0.0.1:8080
 ```
