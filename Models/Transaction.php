@@ -16,12 +16,16 @@ class Transaction {
 
     private $table_name;
     private $db;
+    private $valid_payment_type;
+    private $valid_status;
     public  $error_message;
 
     public function __construct(){
         $db = new Database;
         $this->db = $db->connect();
         $this->table_name = "transactions";
+        $this->valid_payment_type = ['virtual_account', 'credit_card'];
+        $this->valid_status = ['pending', 'paid', 'failed'];
     }
 
     /**
@@ -77,8 +81,15 @@ class Transaction {
             'merchant_id'
         ];
 
-        // proses check parameter
+        // s: proses check parameter
         $errors = [];
+        //cek valid payment type
+        if(!empty($_POST['payment_type']) && !in_array($_POST['payment_type'], $this->valid_payment_type)){
+            $this->error_message = "payment_type tidak valid";
+            return FALSE;
+        }
+
+        //cek iterasi setiap parameter yang dibutuhkan
         foreach ($required_params as $param){
             if (empty($_POST[$param])) {
                  array_push($errors, $param);
@@ -91,6 +102,7 @@ class Transaction {
                 }
             }
         }
+        // e: proses check parameter
 
         // jika ada parameter yang kurang maka return false
         if(!empty($errors)){
@@ -100,7 +112,7 @@ class Transaction {
 
         // input field yang tidak ada di parameter
         $this->references_id = 'TRANS-'.generateRandomStringOrNumber(15);
-        $this->status = 'Pending';
+        $this->status = 'pending';
 
         // return true
         return TRUE;

@@ -32,7 +32,7 @@
                     'data'    => [
                         'references_id' => $transaction->references_id,
                         'number_va'     => $transaction->number_va,
-                        'status'        => $transaction->status
+                        'status'        => ucfirst($transaction->status)
                     ]
                 ];
             }
@@ -63,7 +63,7 @@
                     'data'    => [
                         'references_id' => $transaction->references_id,
                         'invoice_id'    => $transaction->invoice_id,
-                        'status'        => $transaction->status
+                        'status'        => ucfirst($transaction->status)
                     ]
                 ];
             }
