@@ -38,4 +38,35 @@
             }
             echo json_encode($response);
         }
+
+        /**
+         * Controller untuk proses get status data transaksi
+         *
+         * @param get data yang dibutuhkan dengan method get
+         * @return json status dan data / message dari proses get
+         */
+        public function read(){
+            $transaction = new Transaction;                
+            $create = $transaction->getStatusTransaksi();
+
+            $response = [];
+            if (!$create){
+                // response jika proses gagal
+                $response = [
+                    'status'  => FALSE,
+                    'message' => $transaction->error_message
+                ];
+            } else {
+                // response jika proses berhasil
+                $response = [
+                    'status'  => TRUE,
+                    'data'    => [
+                        'references_id' => $transaction->references_id,
+                        'invoice_id'    => $transaction->invoice_id,
+                        'status'        => $transaction->status
+                    ]
+                ];
+            }
+            echo json_encode($response);
+        }
     }

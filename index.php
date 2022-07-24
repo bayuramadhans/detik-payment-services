@@ -1,7 +1,7 @@
 <?php
 define('PROJECT_ROOT', __DIR__); 
 
-$request    = $_SERVER['REQUEST_URI'];
+$request    = strtok($_SERVER["REQUEST_URI"], '?');
 $method     = $_SERVER["REQUEST_METHOD"];
 
 // deteksi route endpoint
@@ -18,6 +18,10 @@ switch ($request) {
         require __DIR__ . '/Controllers/TransactionController.php';
         $transaction = new TransactionController;
         switch ($method) {
+            // endpoint get status transaksi pembayaran 
+            case 'GET' :
+                $transaction->read();
+                break;
             // endpoint create data transaksi pembayaran
             case 'POST' :
                 $transaction->create();

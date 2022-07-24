@@ -114,4 +114,55 @@ class Transaction {
     private function generateNumberVirtualAccount(){
         return 'VA'.generateRandomStringOrNumber(10, 'number');
     }
+
+    /**
+     * Untuk melakukan ambil data status transaksi
+     *
+     * @param POST data yang dikirim dengan method post
+     * @return boolean status dari proses
+     */
+    public function getStatusTransaksi(){
+        // validasi params
+        $empty_params = [];
+        if(empty($_GET['references_id'])){
+            array_push($empty_params, 'references_id');
+        }
+        if(empty($_GET['merchant_id'])){
+            array_push($empty_params, 'merchant_id');
+        }
+        if(!empty($empty_params)){
+            $this->error_message = "Params yang dibutuhkan belum lengkap : " . implode(", ",$empty_params);
+            return FALSE;
+        }
+
+        $this->references_id = $_GET['references_id'];
+        $this->merchant_id   = $_GET['merchant_id'];
+
+        // persiapan syntax sql get data transaksi
+        $sql = "SELECT invoice_id, status FROM {$this->table_name} WHERE references_id = '{$this->references_id}' AND merchant_id = '{$this->merchant_id}';";
+
+        // eksekusi syntax get data transaksi
+        try {
+            $get = $this->db->prepare($sql);
+            if(!$get->execute()){
+                $this->error_message = "Get data transaksi gagal :" . $get->errorInfo()[2];
+                return FALSE;
+            }else{
+                $data = $get->fetch();
+                if(empty($data)){
+                    $this->error_message = "Data tidak ditemukan";
+                    return FALSE;
+                }else{
+                    $this->invoice_id = $data['invoice_id'];
+                    $this->status = $data['status'];
+                }
+                return TRUE;
+            }
+        
+        } catch (PDOException $e) {
+            $this->error_message = "Get data transaksi gagal :" . $e->getMessage();
+            return FALSE;
+        }
+
+    }
 }
