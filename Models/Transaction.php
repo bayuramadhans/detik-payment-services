@@ -18,6 +18,7 @@ class Transaction {
     private $db;
     private $valid_payment_type;
     private $valid_status;
+    private $executed_db;
     public  $error_message;
 
     public function __construct(){
@@ -60,20 +61,103 @@ class Transaction {
             'created_at'    =>date('Y-m-d H:i:s')
         ];
 
-        // eksekusi syntax insert
-        try {
-            $save = $this->db->prepare($sql);
-            if(!$save->execute($data)){
-                $this->error_message = "Create data transaksi gagal :" . $save->errorInfo()[2];
-                return FALSE;
-            }else{
-                return TRUE;
-            }
-        
-        } catch (PDOException $e) {
-            $this->error_message = "Create data transaksi gagal :" . $e->getMessage();
+        // eksekusi syntax
+        $execute = $this->executeSQL('Create data transaksi', $sql, $data);
+        return $execute;
+
+    }
+
+    /**
+     * Untuk melakukan ambil data status transaksi
+     *
+     * @param POST data yang dikirim dengan method post
+     * @return boolean status dari proses
+     */
+    public function getStatusTransaksi(){
+        // validasi params
+        $empty_params = [];
+        if(empty($_GET['references_id'])){
+            array_push($empty_params, 'references_id');
+        }
+        if(empty($_GET['merchant_id'])){
+            array_push($empty_params, 'merchant_id');
+        }
+        if(!empty($empty_params)){
+            $this->error_message = "Params yang dibutuhkan belum lengkap : " . implode(", ",$empty_params);
             return FALSE;
         }
+
+        $this->references_id = htmlspecialchars(strip_tags($_GET['references_id']));
+        $this->merchant_id   = htmlspecialchars(strip_tags($_GET['merchant_id']));
+
+        // persiapan syntax sql get data transaksi
+        $sql  = "SELECT invoice_id, status FROM {$this->table_name} WHERE references_id = :references_id AND merchant_id = :merchant_id;";
+        $data = [
+            'references_id' =>$this->references_id,
+            'merchant_id'   =>$this->merchant_id,
+        ];
+
+        // eksekusi syntax
+        $execute = $this->executeSQL('Get status data transaksi', $sql, $data);
+        if($execute){
+            $result = $this->executed_db->fetch();
+            if(empty($result)){
+                $this->error_message = "Data tidak ditemukan";
+                return FALSE;
+            }else{
+                $this->invoice_id = $result['invoice_id'];
+                $this->status = $result['status'];
+            }
+            return TRUE;
+        }
+
+    }
+
+    /**
+     * Untuk melakukan aksi ganti status
+     *
+     * @param references_id identifier dari transaksi
+     * @param status status baru
+     * @return boolean status dari proses
+     */
+    public function changeStatus($references_id, $status){
+
+        $status = htmlspecialchars(strip_tags(strtolower($status)));
+        // validasi status
+        if (!in_array($status, $this->valid_status)){
+            $this->error_message = "status tidak valid";
+            return FALSE;
+        }
+
+        $this->references_id = htmlspecialchars(strip_tags($references_id));
+
+        // persiapan syntax sql get data transaksi
+        $sql  = "SELECT id FROM {$this->table_name} WHERE references_id = :references_id;";
+        $data = [
+            'references_id' =>$this->references_id,
+        ];
+
+        // eksekusi syntax
+        $execute = $this->executeSQL('Check data transaksi', $sql, $data);
+        if($execute){
+            $result = $this->executed_db->fetch();
+            if(empty($result)){
+                $this->error_message = "Data tidak ditemukan";
+                return FALSE;
+            }
+        }
+
+        // persiapan syntax sql update data transaksi
+        $sql  = "UPDATE {$this->table_name} SET status = :status, updated_at = :updated_at WHERE references_id = :references_id;";
+        $data = [
+            'status' => $status,
+            'references_id' => $this->references_id,
+            'updated_at'    => date('Y-m-d H:i:s')
+        ];
+
+        // eksekusi syntax
+        $execute = $this->executeSQL('Update data transaksi', $sql, $data);
+        return $execute;
 
     }
 
@@ -140,101 +224,20 @@ class Transaction {
         return 'VA'.generateRandomStringOrNumber(10, 'number');
     }
 
-    /**
-     * Untuk melakukan ambil data status transaksi
-     *
-     * @param POST data yang dikirim dengan method post
-     * @return boolean status dari proses
-     */
-    public function getStatusTransaksi(){
-        // validasi params
-        $empty_params = [];
-        if(empty($_GET['references_id'])){
-            array_push($empty_params, 'references_id');
-        }
-        if(empty($_GET['merchant_id'])){
-            array_push($empty_params, 'merchant_id');
-        }
-        if(!empty($empty_params)){
-            $this->error_message = "Params yang dibutuhkan belum lengkap : " . implode(", ",$empty_params);
-            return FALSE;
-        }
-
-        $this->references_id = htmlspecialchars(strip_tags($_GET['references_id']));
-        $this->merchant_id   = htmlspecialchars(strip_tags($_GET['merchant_id']));
-
-        // persiapan syntax sql get data transaksi
-        $sql  = "SELECT invoice_id, status FROM {$this->table_name} WHERE references_id = :references_id AND merchant_id = :merchant_id;";
-        $data = [
-            'references_id' =>$this->references_id,
-            'merchant_id'   =>$this->merchant_id,
-        ];
-
-        // eksekusi syntax get data transaksi
+    private function executeSQL($action, $sql, $data){
         try {
-            $get = $this->db->prepare($sql);
-            if(!$get->execute($data)){
-                $this->error_message = "Get data transaksi gagal :" . $get->errorInfo()[2];
+            $execute = $this->db->prepare($sql);
+            if(!$execute->execute($data)){
+                $this->error_message = $action . " transaksi gagal :" . $execute->errorInfo()[2];
                 return FALSE;
             }else{
-                $result = $get->fetch();
-                if(empty($result)){
-                    $this->error_message = "Data tidak ditemukan";
-                    return FALSE;
-                }else{
-                    $this->invoice_id = $result['invoice_id'];
-                    $this->status = $result['status'];
-                }
+                $this->executed_db = $execute;
                 return TRUE;
             }
         
         } catch (PDOException $e) {
-            $this->error_message = "Get data transaksi gagal :" . $e->getMessage();
+            $this->error_message = $action . " transaksi gagal :" . $e->getMessage();
             return FALSE;
         }
-
-    }
-
-    /**
-     * Untuk melakukan aksi ganti status
-     *
-     * @param references_id identifier dari transaksi
-     * @param status status baru
-     * @return boolean status dari proses
-     */
-    public function changeStatus($references_id, $status){
-
-        $status = htmlspecialchars(strip_tags(strtolower($status)));
-        // validasi status
-        if (!in_array($status, $this->valid_status)){
-            $this->error_message = "status tidak valid";
-            return FALSE;
-        }
-
-        $this->references_id = htmlspecialchars(strip_tags($references_id));
-
-        // persiapan syntax sql get data transaksi
-        $sql  = "UPDATE {$this->table_name} SET status = :status, updated_at = :updated_at WHERE references_id = :references_id RETURNING status;";
-        $data = [
-            'status' => $status,
-            'references_id' => $this->references_id,
-            'updated_at'    => date('Y-m-d H:i:s')
-        ];
-
-        // eksekusi syntax get data transaksi
-        try {
-            $update = $this->db->prepare($sql);
-            if(!$update->execute($data)){
-                $this->error_message = "Update status data transaksi gagal :" . $get->errorInfo()[2];
-                return FALSE;
-            }else{
-                return TRUE;
-            }
-        
-        } catch (PDOException $e) {
-            $this->error_message = "Get data transaksi gagal :" . $e->getMessage();
-            return FALSE;
-        }
-
     }
 }
